@@ -2,6 +2,12 @@
 
 import requests, argparse, re, getpass
 
+'''
+    This script was maden to get vk_token
+'''
+
+__author__ = 'EtFortuitiCasusGignitMundoSuccedunt'
+
 def scope_finder(inp, scopes):
     s = 0
 
@@ -11,7 +17,10 @@ def scope_finder(inp, scopes):
 
     elif len(inp.s)>0:
         for i in inp.s:
-            s += scopes[i]
+            try:
+                s += scopes[i]
+            except Exception as e:
+                raise Exception('Incorrect scope: '+i)
 
     if len(inp.s)==0:
         raise Exception('There are no scope. Use -l key to list scopes')
