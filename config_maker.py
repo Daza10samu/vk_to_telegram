@@ -16,8 +16,8 @@ pwd = pwd+'/vk_to_telegram'
 def CreateAccount(config, accounts):
     name = input('Account name: ')
     token = input('Token: ')
-    chat_users = str(input('Messages from wich users will be resend(IDs, Example: 00000 000001): ').split())
-    chats = str(input('Messages from wich chats will be resend(IDs, Example: 1 2 23): ').split())
+    chat_users = str([int(x) for x in input('Messages from wich users will be resend(IDs, Example: 00000 000001): ').split()])
+    chats = str([int(x) for x in input('Messages from wich chats will be resend(IDs, Example: 1 2 23): ').split()])
     accounts = str(accounts + [name])
     config.set('General', 'vk_users', accounts)
     config.add_section(name)
@@ -25,24 +25,31 @@ def CreateAccount(config, accounts):
     config.set(name, 'chat_users', chat_users)
     config.set(name, 'chats', chats)
 
+def RemoveAccount(config, accounts):
+    name = input('Which account do you like to remove: ')
+    if name not in accounts:
+        raise Exception('Wrong account')
+    del accounts[accounts.index(name)]
+    config.remove_section(name)
+    config.set('General', 'vk_users', str(accounts))
+
+
 def dialog():
     config = configparser.ConfigParser()
-    config.read(pwd+'/.config')
+    config.read(pwd+'/config')
     accounts = [i.strip("[]',") for i in config.get('General', 'vk_users').split()]
     if accounts==['']:
         CreateAccount(config, [])
     else:
         print('Accounts vk:', *accounts)
-        action = input('Choose your action( remove account(r), add account(a), modify account(m): ')
+        action = input('Choose your action( remove account(r), add account(a)): ')
         if action=='r':
-            pass
+            RemoveAccount(config, accounts)
         elif action=='a':
             CreateAccount(config, accounts)
-        elif action=='m':
-            pass
         else:
             raise Exception('Incorrect action')
-    with open(pwd+'/.config', 'w') as f:
+    with open(pwd+'/config', 'w') as f:
         config.write(f)
     print('Config have been updated.')
     exit()
@@ -51,7 +58,7 @@ def dialog():
 def makecfg():
     config = configparser.ConfigParser()
     bot_token = input('What is token in your telegram bot: ')
-    user_ids = str(input('Your telegram accounts: ').split())
+    user_ids = str([int(x) for x in input('Your telegram accounts: ').split()])
     vk_users = '[]'
     if user_ids=='[]' or bot_token=='':
         raise Exception('Token or ids must be not zero')
@@ -59,7 +66,7 @@ def makecfg():
     config.set('General', 'bot_token', bot_token)
     config.set('General', 'user_ids', user_ids)
     config.set('General', 'vk_users', vk_users)
-    with open(pwd+'/.config', 'w') as f:
+    with open(pwd+'/config', 'w') as f:
         config.write(f)
     print('Config have been made. Now add the users')
     exit()
@@ -74,7 +81,7 @@ arg = args()
 if arg.remake:
     makecfg()
 
-if '.config' in os.listdir(pwd):
+if 'config' in os.listdir(pwd):
     dialog()
 
 makecfg()
