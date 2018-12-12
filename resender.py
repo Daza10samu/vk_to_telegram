@@ -33,7 +33,7 @@ class LongPool(Thread):
             try:
                 for i in long_pooll.listen():
                     if i.type == VkEventType.MESSAGE_NEW:
-                        bot_send(str(session.messages.getById(message_ids=(i.message(id)))))
+                        bot_send(str(session.messages.getById(message_ids=(i.message_id))))
             except Exception as exep:
                 bot_send('Ohhh... there are some errors: '+str(exep))
 
