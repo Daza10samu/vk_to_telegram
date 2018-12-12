@@ -27,15 +27,15 @@ class LongPool(threading.Thread):
 
     def run(self):
         session = vk_api.VkApi(token=self.token)
-        long_pooll = VkLongPoll(session)
-        session = session.get_api()
+        api = session.get_api()
         while 1:
+            long_pooll = VkLongPoll(session)
             try:
                 for i in long_pooll.listen():
                     if self.paused:
                         continue
                     if i.type == VkEventType.MESSAGE_NEW:
-                        bot_send(str(session.messages.getById(message_ids=(i.message_id))))
+                        bot_send(str(api.messages.getById(message_ids=(i.message_id))))
             except Exception as exep:
                 bot_send('Ohhh... there are some errors: '+str(exep))
 
