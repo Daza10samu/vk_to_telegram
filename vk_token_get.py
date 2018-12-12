@@ -75,5 +75,8 @@ login = input('Login:')
 passwd = getpass.getpass()
 
 token_page = requests.get('https://oauth.vk.com/token?grant_type=password&scope={}&client_id={}&client_secret={}&username={}&password={}'.format(scope, platform[0], platform[1], login, passwd))
+token = re.findall(r'"access_token":"([^"]*)"', token_page.text)
+if token==[]:
+    raise Exception('Wrong login/password')
 
-print(re.findall(r'"access_token":"([^"]*)"', token_page.text)[0])
+print(token[0])
