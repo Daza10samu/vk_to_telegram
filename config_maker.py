@@ -37,7 +37,7 @@ def RemoveAccount(config, accounts):
 def dialog():
     config = configparser.ConfigParser()
     config.read(pwd+'/config')
-    accounts = [i.strip("[]',") for i in config.get('General', 'vk_users').split()]
+    accounts = [i.strip("[]' ") for i in config.get('General', 'vk_users').split(',')]
     if accounts==['']:
         CreateAccount(config, [])
     else:
