@@ -3,7 +3,7 @@
 import os, configparser, argparse
 
 '''
-    pass
+    This scrip will make or remove config. To modify config you should find it in $HOME/.config/vk_to_telegram. Then mannually change config
 '''
 
 __author__ = 'EtFortuitiCasusGignitMundoSuccedunt'
