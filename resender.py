@@ -10,6 +10,7 @@ config = configparser.ConfigParser()
 config.read(pwd+'/config')
 bot_token = config.get('General', 'bot_token')
 send_ids = config.get('General', 'user_ids')
+send_ids = [x.strip("[],'") for x in send_ids.split()]
 bot = telebot.TeleBot(bot_token)
 
 def bot_send(msg):
@@ -30,7 +31,7 @@ class LongPool(Thread):
         session = session.get_api()
         while 1:
             try:
-                for i in self.long_pooll.listen():
+                for i in long_pooll.listen():
                     if i.type == VkEventType.MESSAGE_NEW:
                         bot_send(str(session.messages.getById(message_ids=(i.message(id)))))
             except Exception as exep:
