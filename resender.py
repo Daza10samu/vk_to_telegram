@@ -31,7 +31,7 @@ class LongPool(Thread):
             try:
                 for i in self.long_pooll.listen():
                     if i.type == VkEventType.MESSAGE_NEW:
-                        bot_send(str(session..messages.getById(message_ids=(i.message(id)))))
+                        bot_send(str(session.messages.getById(message_ids=(i.message(id)))))
             except Exception as exep:
                 bot_send('Ohhh... there are some errors: '+exep)
 
@@ -40,6 +40,5 @@ check_configs = []
 for name in accounts:
     check_configs.append([config.get(name, 'token'), [int(i.strip("[],'")) for i in config.get(name, 'chat_users').split()], [int(i.strip("[],'")) for i in config.get(name, 'chats').split()]])
 
-lp = []
 for i in check_configs:
-    lp.append(LongPool(i))
+    LongPool(i).start()
