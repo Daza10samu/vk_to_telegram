@@ -2,7 +2,7 @@
 
 import os, configparser, telebot
 from vk_api.longpoll import VkLongPoll, VkEventType
-import vk_api, datetime, threading
+import vk_api, datetime, threading, re
 
 pwd = os.environ['HOME']+'/.config/vk_to_telegram'
 config = configparser.ConfigParser()
@@ -16,6 +16,55 @@ def bot_send(msg):
     for i in send_ids:
         bot.send_message(i, msg)
 
+def ParseBody(msg):
+    if 'attachments' in msg.keys():
+        attachments = []
+        for i in msg['attachments']:
+            print(i)
+            print()
+            if i['type'] == 'sticker':
+                sticker = i['sticker']
+                print(sticker)
+                print()
+                maxq = 0
+                for j in sticker['images']:
+                    if j['width']*j['height']>maxq:
+                        maxq = j['width']*j['height']
+                        url = j['url']
+                attachments.append('sticker {}'.format(url))
+            elif i['type'] == 'photo':
+                maxq = 0
+                for j in i['photo']['sizes']:
+                    if j['width']*j['height']>maxq:
+                        maxq = j['width']*j['height']
+                        url = j['url']
+                attachments.append('photo {}'.format(url))
+            else:
+                attachments.append(i)
+        return attachments
+
+def ParsePriv(msg, api):
+    print(msg)
+    print()
+    print()
+    user = api.users.get(user_ids=msg['user_id'])[0]
+    content = ['Sent from "{} {}" message: '.format(user['first_name'], user['last_name']) + msg['text']]
+    if 'attachments' in msg.keys():
+        if msg['attachments']!=[]:
+            content.append('Attachments: '+', '.join(ParseBody(msg)))
+    print()
+    print()
+    return content
+
+def ParseChat(msg, api):
+    print(msg)
+    user = api.users.get(user_ids=msg['user_id'])[0]
+    content = ['In chat "{}" sent from "{} {}" message: '.format(msg['title'], user['first_name'], user['last_name']) + msg['text']]
+    if 'attachments' in msg.keys():
+        if msg['attachments']!=[]:
+            content.append('Attachments: '+', '.join(ParseBody(msg)))
+    return content
+
 class LongPool(threading.Thread):
 
     def __init__(self, account):
@@ -26,18 +75,30 @@ class LongPool(threading.Thread):
         self.chats = account[2]
 
     def run(self):
-        session = vk_api.VkApi(token=self.token)
+        session = vk_api.VkApi(token=self.token, api_version='5.92')
         api = session.get_api()
         while 1:
             long_pooll = VkLongPoll(session)
-            try:
-                for i in long_pooll.listen():
-                    if self.paused:
+            # try:
+            for i in long_pooll.listen():
+                if self.paused:
+                    continue
+                if i.type == VkEventType.MESSAGE_NEW:
+                    msg = api.messages.getById(message_ids=(i.message_id))['items'][0]
+                    if msg['out']:
                         continue
-                    if i.type == VkEventType.MESSAGE_NEW:
-                        bot_send(str(api.messages.getById(message_ids=(i.message_id))))
-            except Exception as exep:
-                bot_send('Ohhh... there are some errors: '+str(exep))
+                    if 'chat_id' in msg.keys():
+                        if msg['chat_id'] in self.chats:
+                            content = ParseChat(msg, api)
+                            for i in content:
+                                bot_send(i)
+                    elif msg['user_id'] in self.chat_users:
+                        content = ParsePriv(msg, api)
+                        for i in content:
+                                bot_send(i)
+
+            # except Exception as exep:
+            #     bot_send('Ohhh... there are some errors: '+str(exep))
 
     def stop(self):
         self.paused = True
