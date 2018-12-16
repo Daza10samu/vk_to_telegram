@@ -43,12 +43,12 @@ def ParseBody(msg):
                 attachments.append(i)
         return attachments
 
-def ParsePriv(msg, api):
+def ParsePriv(msg, me, api):
     print(msg)
     print()
     print()
     user = api.users.get(user_ids=msg['from_id'])[0]
-    content = ['Sent from "{} {}" message: '.format(user['first_name'], user['last_name']) + msg['text']]
+    content = ['Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name']) + msg['text']]
     if 'attachments' in msg.keys():
         if msg['attachments']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
@@ -56,10 +56,10 @@ def ParsePriv(msg, api):
     print()
     return content
 
-def ParseChat(msg, api):
+def ParseChat(msg, me, api):
     print(msg)
     user = api.users.get(user_ids=msg['from_id'])[0]
-    content = ['In chat "{}" sent from "{} {}" message: '.format(msg['title'], user['first_name'], user['last_name']) + msg['text']]
+    content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(msg['title'], user['first_name'], user['last_name']) + msg['text']]
     if 'attachments' in msg.keys():
         if msg['attachments']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
@@ -77,28 +77,29 @@ class LongPool(threading.Thread):
     def run(self):
         session = vk_api.VkApi(token=self.token, api_version='5.92')
         api = session.get_api()
+        me = api.users.get()[0]
         while 1:
             long_pooll = VkLongPoll(session)
-            # try:
-            for i in long_pooll.listen():
-                if self.paused:
-                    continue
-                if i.type == VkEventType.MESSAGE_NEW:
-                    msg = api.messages.getById(message_ids=(i.message_id))['items'][0]
-                    if msg['out']:
+            try:
+                for i in long_pooll.listen():
+                    if self.paused:
                         continue
-                    if 'chat_id' in msg.keys():
-                        if msg['chat_id'] in self.chats:
-                            content = ParseChat(msg, api)
+                    if i.type == VkEventType.MESSAGE_NEW:
+                        msg = api.messages.getById(message_ids=(i.message_id))['items'][0]
+                        if msg['out']:
+                            continue
+                        if 'chat_id' in msg.keys():
+                            if msg['chat_id'] in self.chats:
+                                content = ParseChat(msg, me, api)
+                                for i in content:
+                                    bot_send(i)
+                        elif msg['from_id'] in self.chat_users:
+                            content = ParsePriv(msg, me, api)
                             for i in content:
-                                bot_send(i)
-                    elif msg['from_id'] in self.chat_users:
-                        content = ParsePriv(msg, api)
-                        for i in content:
-                                bot_send(i)
+                                    bot_send(i)
 
-            # except Exception as exep:
-            #     bot_send('Ohhh... there are some errors: '+str(exep))
+            except Exception as exep:
+                bot_send('Ohhh... there are some errors: '+str(exep))
 
     def stop(self):
         self.paused = True
