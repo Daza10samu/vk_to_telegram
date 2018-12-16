@@ -47,7 +47,7 @@ def ParsePriv(msg, api):
     print(msg)
     print()
     print()
-    user = api.users.get(user_ids=msg['user_id'])[0]
+    user = api.users.get(user_ids=msg['from_id'])[0]
     content = ['Sent from "{} {}" message: '.format(user['first_name'], user['last_name']) + msg['text']]
     if 'attachments' in msg.keys():
         if msg['attachments']!=[]:
@@ -58,7 +58,7 @@ def ParsePriv(msg, api):
 
 def ParseChat(msg, api):
     print(msg)
-    user = api.users.get(user_ids=msg['user_id'])[0]
+    user = api.users.get(user_ids=msg['from_id'])[0]
     content = ['In chat "{}" sent from "{} {}" message: '.format(msg['title'], user['first_name'], user['last_name']) + msg['text']]
     if 'attachments' in msg.keys():
         if msg['attachments']!=[]:
@@ -92,7 +92,7 @@ class LongPool(threading.Thread):
                             content = ParseChat(msg, api)
                             for i in content:
                                 bot_send(i)
-                    elif msg['user_id'] in self.chat_users:
+                    elif msg['from_id'] in self.chat_users:
                         content = ParsePriv(msg, api)
                         for i in content:
                                 bot_send(i)
