@@ -48,7 +48,7 @@ def ParsePriv(msg, me, api):
     print()
     print()
     user = api.users.get(user_ids=msg['from_id'])[0]
-    content = ['Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name']) + msg['text']]
+    content = ['Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
     if 'attachments' in msg.keys():
         if msg['attachments']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
@@ -59,7 +59,7 @@ def ParsePriv(msg, me, api):
 def ParseChat(msg, me, api):
     print(msg)
     user = api.users.get(user_ids=msg['from_id'])[0]
-    content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(msg['title'], user['first_name'], user['last_name']) + msg['text']]
+    content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(msg['title'], user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
     if 'attachments' in msg.keys():
         if msg['attachments']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
