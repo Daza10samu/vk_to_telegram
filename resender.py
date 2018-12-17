@@ -40,29 +40,30 @@ def ParseBody(msg):
                         url = j['url']
                 attachments.append('photo {}'.format(url))
             elif i['type'] == 'audio_message':
-                attachments.append(i['audio_message']['link_ogg'])
+                attachments.append('voice message '+i['audio_message']['link_ogg'])
             else:
                 attachments.append(str(i))
+        attachments.append(msg['fwd_messages'])
         return attachments
 
-def ParsePriv(msg, me, api):
+def ParsePriv(msg, me, user, api):
     print(msg)
     print()
     print()
     user = api.users.get(user_ids=msg['from_id'])[0]
     content = ['Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
-    if 'attachments' in msg.keys():
+    if 'attachments' in msg.keys() or 'fwd_messages' in msg.keys():
         if msg['attachments']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
     print()
     print()
     return content
 
-def ParseChat(msg, me, api):
-    print(msg)
-    user = api.users.get(user_ids=msg['from_id'])[0]
-    content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(msg['title'], user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
-    if 'attachments' in msg.keys():
+def ParseChat(msg, me, user, api):
+    chat = api.messages.getChat(chat_id=msg['peer_id']-2000000000)
+    print(msg, chat)
+    content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(chat['title'], user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
+    if 'attachments' in msg.keys() or 'fwd_messages' in msg.keys():
         if msg['attachments']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
     return content
@@ -87,16 +88,17 @@ class LongPool(threading.Thread):
                     if self.paused:
                         continue
                     if i.type == VkEventType.MESSAGE_NEW:
-                        msg = api.messages.getById(message_ids=(i.message_id))['items'][0]
+                        msg_ext = api.messages.getById(message_ids=i.message_id, extended = 1)
+                        msg = msg_ext['items'][0]
+                        user = msg_ext['profiles'][0]
                         if msg['out']:
                             continue
-                        if 'chat_id' in msg.keys():
-                            if msg['chat_id'] in self.chats:
-                                content = ParseChat(msg, me, api)
-                                for i in content:
-                                    bot_send(i)
+                        if msg['peer_id']-2000000000 in self.chats:
+                            content = ParseChat(msg, me, user, api)
+                            for i in content:
+                                bot_send(i)
                         elif msg['from_id'] in self.chat_users:
-                            content = ParsePriv(msg, me, api)
+                            content = ParsePriv(msg, me, user, api)
                             for i in content:
                                     bot_send(i)
 
@@ -149,9 +151,3 @@ while 1:
     except Exception as exep:
         bot_send('Ohhh... there are some errors: '+str(exep))
 
-'''
-{'audio_message': {'waveform': [13, 11, 10, 9, 17, 11, 12, 11, 9, 13, 10, 9, 9, 10, 12, 11, 11, 15, 14, 22, 20, 18, 16, 15, 11, 12, 11, 9, 15, 13, 8, 7, 6, 6, 6, 7, 9, 7, 12, 12, 18, 31, 26, 
-19, 16, 10, 14, 11, 9, 14, 24, 21, 20, 22, 17, 13, 12, 7, 11, 14, 8, 9, 6, 18, 22, 20, 17, 20, 22, 13, 16, 8, 14, 9, 8, 9, 9, 12, 13, 11, 15, 17, 14], 'access_key': '90a1ffae6d3f54dcf8', 'ow$
-er_id': 164572412, 'link_ogg': 'https://psv4.userapi.com/c853024//u164572412/audiomsg/d5/61b129a1a8.ogg', 'id': 485327287, 'link_mp3': 'https://psv4.userapi.com/c853024//u164572412/audiomsg/$
-5/61b129a1a8.mp3', 'duration': 4}, 'type': 'audio_message'}
-'''
