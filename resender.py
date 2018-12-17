@@ -43,7 +43,8 @@ def ParseBody(msg):
                 attachments.append('voice message '+i['audio_message']['link_ogg'])
             else:
                 attachments.append(str(i))
-        attachments.append(msg['fwd_messages'])
+        if msg['fwd_messages']!=[]:
+            attachments.append(msg['fwd_messages'])
         return attachments
 
 def ParsePriv(msg, me, user, api):
@@ -53,7 +54,7 @@ def ParsePriv(msg, me, user, api):
     user = api.users.get(user_ids=msg['from_id'])[0]
     content = ['Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
     if 'attachments' in msg.keys() or 'fwd_messages' in msg.keys():
-        if msg['attachments']!=[]:
+        if msg['attachments']!=[] or msg['fwd_messages']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
     print()
     print()
@@ -64,7 +65,7 @@ def ParseChat(msg, me, user, api):
     print(msg, chat)
     content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(chat['title'], user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
     if 'attachments' in msg.keys() or 'fwd_messages' in msg.keys():
-        if msg['attachments']!=[]:
+        if msg['attachments']!=[] or msg['fwd_messages']!=[]:
             content.append('Attachments: '+', '.join(ParseBody(msg)))
     return content
 
@@ -151,3 +152,11 @@ while 1:
     except Exception as exep:
         bot_send('Ohhh... there are some errors: '+str(exep))
 
+
+'''
+{'images_with_background': [{'height': 64, 'url': 'https://vk.com/sticker/1-9046-64b-6', 'width': 64}, {'height': 128, 'url': 'https://vk.com/sticker/1-9046-128b-6', 'width': 128}, {'height':
+ 256, 'url': 'https://vk.com/sticker/1-9046-256b-6', 'width': 256}, {'height': 352, 'url': 'https://vk.com/sticker/1-9046-352b-6', 'width': 352}, {'height': 512, 'url': 'https://vk.com/sticke
+r/1-9046-512b-6', 'width': 512}], 'images': [{'height': 64, 'url': 'https://vk.com/sticker/1-9046-64-6', 'width': 64}, {'height': 128, 'url': 'https://vk.com/sticker/1-9046-128-6', 'width': 1
+28}, {'height': 256, 'url': 'https://vk.com/sticker/1-9046-256-6', 'width': 256}, {'height': 352, 'url': 'https://vk.com/sticker/1-9046-352-6', 'width': 352}, {'height': 512, 'url': 'https://
+vk.com/sticker/1-9046-512-6', 'width': 512}], 'product_id': 279, 'sticker_id': 9046}
+'''
