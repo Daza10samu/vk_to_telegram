@@ -16,58 +16,86 @@ def bot_send(msg):
     for i in send_ids:
         bot.send_message(i, msg)
 
-def ParseBody(msg):
-    if 'attachments' in msg.keys():
+def ParseAtta(msg):
+    for i in msg['attachments']:
+        print(i)
+        print()
         attachments = []
-        for i in msg['attachments']:
-            print(i)
+        if i['type'] == 'sticker':
+            sticker = i['sticker']
+            print(sticker)
             print()
-            if i['type'] == 'sticker':
-                sticker = i['sticker']
-                print(sticker)
-                print()
-                maxq = 0
-                for j in sticker['images']:
-                    if j['width']*j['height']>maxq:
-                        maxq = j['width']*j['height']
-                        url = j['url']
-                attachments.append('sticker {}'.format(url))
-            elif i['type'] == 'photo':
-                maxq = 0
-                for j in i['photo']['sizes']:
-                    if j['width']*j['height']>maxq:
-                        maxq = j['width']*j['height']
-                        url = j['url']
-                attachments.append('photo {}'.format(url))
-            elif i['type'] == 'audio_message':
-                attachments.append('voice message '+i['audio_message']['link_ogg'])
-            else:
-                attachments.append(str(i))
-        if msg['fwd_messages']!=[]:
-            attachments.append(msg['fwd_messages'])
-        return attachments
+            maxq = 0
+            for j in sticker['images']:
+                if j['width']*j['height']>maxq:
+                    maxq = j['width']*j['height']
+                    url = j['url']
+            attachments.append('sticker {}'.format(url))
+        elif i['type'] == 'photo':
+            maxq = 0
+            for j in i['photo']['sizes']:
+                if j['width']*j['height']>maxq:
+                    maxq = j['width']*j['height']
+                    url = j['url']
+            attachments.append('photo {}'.format(url))
+        elif i['type'] == 'audio_message':
+            attachments.append('voice message '+i['audio_message']['link_ogg'])
+        else:
+            attachments.append(str(i))
+    return attachments
+
+def ParseForw(msg, api, fwd_level=1):
+    bot_send('| '*(fwd_level-1)+'\\_'+'\tForwards: ')
+    for i in msg['fwd_messages']:
+        print(i)
+        print()
+        print()
+        user = api.users.get(user_ids=i['from_id'])[0]
+        bot_send('| '*fwd_level+'from "{} {}": '.format(user['first_name'], user['last_name']) + i['text'])
+        if 'attachments' in i.keys():
+            if i['attachments']!=[]:
+                attachments = ParseAtta(i)
+                bot_send('|'*fwd_level+'\tattachments: '+attachments[0])
+                for i in attachments[1:]:
+                    bot_send(i)
+        if 'fwd_messages' in i.keys():
+            if msg['fwd_messages']!=[]:
+                ParseForw(i, me, api, fwd_level+1)
+        print()
+        print()
 
 def ParsePriv(msg, me, user, api):
     print(msg)
     print()
     print()
     user = api.users.get(user_ids=msg['from_id'])[0]
-    content = ['Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
-    if 'attachments' in msg.keys() or 'fwd_messages' in msg.keys():
-        if msg['attachments']!=[] or msg['fwd_messages']!=[]:
-            content.append('Attachments: '+', '.join(ParseBody(msg)))
+    bot_send('Sent from "{} {}" message to "{} {}": '.format(user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text'])
+    if msg['attachments']!=[]:
+        attachments = ParseAtta(msg)
+        bot_send('Attachments: '+attachments[0])
+        for i in attachments[1:]:
+            bot_send(i)
+    if 'fwd_messages' in msg.keys():
+        if msg['fwd_messages']!=[]:
+            ParseForw(msg, api)
     print()
     print()
-    return content
 
 def ParseChat(msg, me, user, api):
     chat = api.messages.getChat(chat_id=msg['peer_id']-2000000000)
     print(msg, chat)
-    content = ['In chat "{}" sent from "{} {}" message to "{} {}": '.format(chat['title'], user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text']]
-    if 'attachments' in msg.keys() or 'fwd_messages' in msg.keys():
-        if msg['attachments']!=[] or msg['fwd_messages']!=[]:
-            content.append('Attachments: '+', '.join(ParseBody(msg)))
-    return content
+    print()
+    print()
+    bot_send('In chat "{}" sent from "{} {}" message to "{} {}": '.format(chat['title'], user['first_name'], user['last_name'], me['first_name'], me['last_name']) + msg['text'])
+    if msg['attachments']!=[]:
+        attachments = ParseAtta(msg)
+        bot_send('Attachments: '+attachments[0])
+        for i in attachments[1:]:
+            bot_send(i)
+    if msg['fwd_messages']!=[]:
+        ParseForw(msg)
+    print()
+    print()
 
 class LongPool(threading.Thread):
 
@@ -95,13 +123,9 @@ class LongPool(threading.Thread):
                         if msg['out']:
                             continue
                         if msg['peer_id']-2000000000 in self.chats:
-                            content = ParseChat(msg, me, user, api)
-                            for i in content:
-                                bot_send(i)
+                           ParseChat(msg, me, user, api)
                         elif msg['from_id'] in self.chat_users:
-                            content = ParsePriv(msg, me, user, api)
-                            for i in content:
-                                    bot_send(i)
+                            ParsePriv(msg, me, user, api)
 
             except Exception as exep:
                 bot_send('Ohhh... there are some errors: '+str(exep))
@@ -154,9 +178,15 @@ while 1:
 
 
 '''
-{'images_with_background': [{'height': 64, 'url': 'https://vk.com/sticker/1-9046-64b-6', 'width': 64}, {'height': 128, 'url': 'https://vk.com/sticker/1-9046-128b-6', 'width': 128}, {'height':
- 256, 'url': 'https://vk.com/sticker/1-9046-256b-6', 'width': 256}, {'height': 352, 'url': 'https://vk.com/sticker/1-9046-352b-6', 'width': 352}, {'height': 512, 'url': 'https://vk.com/sticke
-r/1-9046-512b-6', 'width': 512}], 'images': [{'height': 64, 'url': 'https://vk.com/sticker/1-9046-64-6', 'width': 64}, {'height': 128, 'url': 'https://vk.com/sticker/1-9046-128-6', 'width': 1
-28}, {'height': 256, 'url': 'https://vk.com/sticker/1-9046-256-6', 'width': 256}, {'height': 352, 'url': 'https://vk.com/sticker/1-9046-352-6', 'width': 352}, {'height': 512, 'url': 'https://
-vk.com/sticker/1-9046-512-6', 'width': 512}], 'product_id': 279, 'sticker_id': 9046}
+{'attachments': [], 'random_id': 0, 'peer_id': 2000000014, 'from_id': 389608140, 'fwd_messages': [{'text': '', 'id': 103765, 'from_id': 26802336, 'fwd_messages': [{'text': 'Н Х', 'id': 103753
+, 'from_id': 317111470, 'conversation_message_id': 19337, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726097, 'attachments': []}, {'text': 'И У', 'id': 103755, 'from_id': 64075685, '
+conversation_message_id': 19339, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726098, 'attachments': []}, {'text': 'К Я', 'id': 103757, 'from_id': 187123658, 'conversation_message_id'
+: 19341, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726108, 'attachments': []}, {'text': 'И С', 'id': 103759, 'from_id': 188320403, 'conversation_message_id': 19343, 'update_time': 
+0, 'peer_id': 2000000014, 'date': 1545726124, 'attachments': []}, {'text': 'Т О', 'id': 103760, 'from_id': 26802336, 'conversation_message_id': 19344, 'update_time': 0, 'peer_id': 2000000014,
+ 'date': 1545726131, 'attachments': []}, {'text': 'А С', 'id': 103761, 'from_id': 317111470, 'conversation_message_id': 19345, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726138, 'at
+tachments': []}], 'conversation_message_id': 19349, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726169, 'attachments': []}], 'out': 0, 'date': 1545736468, 'text': 'Это шо, роккебол?'
+, 'id': 103784, 'conversation_message_id': 19367, 'is_hidden': False, 'important': False} {'id': 14, 'title': '10д', 'admin_id': 22858128, 'users': [22858128, 160589921, 187123658, 151777744,
+ 344477715, 195211020, 64075685, 181184918, 120722492, 196883595, 110640021, 234534617, 26802336, 389608140, 143920317, 410192331, 317111470, 244904389, 269502954, 190903868, 243121011, 21881
+4281, 164572412, 341299001, 239345159, 309690797, 138038606, 161896672, 188320403, 190870897, 205414825, 465203592], 'members_count': 32, 'push_settings': {'disabled_until': -1, 'sound': 1}, 
+'type': 'chat'}
 '''
