@@ -124,6 +124,8 @@ class LongPool(threading.Thread):
                             continue
                         if msg['peer_id']-2000000000 in self.chats:
                            ParseChat(msg, me, user, api)
+                        if '*' in self.chat_users:
+                            ParsePriv(msg, me, user, api)
                         elif msg['from_id'] in self.chat_users:
                             ParsePriv(msg, me, user, api)
 
@@ -175,18 +177,3 @@ while 1:
         exit()
     except Exception as exep:
         bot_send('Ohhh... there are some errors: '+str(exep))
-
-
-'''
-{'attachments': [], 'random_id': 0, 'peer_id': 2000000014, 'from_id': 389608140, 'fwd_messages': [{'text': '', 'id': 103765, 'from_id': 26802336, 'fwd_messages': [{'text': 'Н Х', 'id': 103753
-, 'from_id': 317111470, 'conversation_message_id': 19337, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726097, 'attachments': []}, {'text': 'И У', 'id': 103755, 'from_id': 64075685, '
-conversation_message_id': 19339, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726098, 'attachments': []}, {'text': 'К Я', 'id': 103757, 'from_id': 187123658, 'conversation_message_id'
-: 19341, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726108, 'attachments': []}, {'text': 'И С', 'id': 103759, 'from_id': 188320403, 'conversation_message_id': 19343, 'update_time': 
-0, 'peer_id': 2000000014, 'date': 1545726124, 'attachments': []}, {'text': 'Т О', 'id': 103760, 'from_id': 26802336, 'conversation_message_id': 19344, 'update_time': 0, 'peer_id': 2000000014,
- 'date': 1545726131, 'attachments': []}, {'text': 'А С', 'id': 103761, 'from_id': 317111470, 'conversation_message_id': 19345, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726138, 'at
-tachments': []}], 'conversation_message_id': 19349, 'update_time': 0, 'peer_id': 2000000014, 'date': 1545726169, 'attachments': []}], 'out': 0, 'date': 1545736468, 'text': 'Это шо, роккебол?'
-, 'id': 103784, 'conversation_message_id': 19367, 'is_hidden': False, 'important': False} {'id': 14, 'title': '10д', 'admin_id': 22858128, 'users': [22858128, 160589921, 187123658, 151777744,
- 344477715, 195211020, 64075685, 181184918, 120722492, 196883595, 110640021, 234534617, 26802336, 389608140, 143920317, 410192331, 317111470, 244904389, 269502954, 190903868, 243121011, 21881
-4281, 164572412, 341299001, 239345159, 309690797, 138038606, 161896672, 188320403, 190870897, 205414825, 465203592], 'members_count': 32, 'push_settings': {'disabled_until': -1, 'sound': 1}, 
-'type': 'chat'}
-'''
