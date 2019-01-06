@@ -42,6 +42,10 @@ def ParseAtta(msg):
             attachments.append('voice message '+i['audio_message']['link_ogg'])
         elif i['type'] == 'doc':
             attachments.append('document '+i['doc']['url'])
+        elif i['type'] == 'wall':
+            attachments.append('wall https://vk.com/wall{}_{}'.format(i['wall']['from_id'], i['wall']['id']))
+        elif i['type'] == 'video':
+            attachments.append('video '+i['video']['player'])
         else:
             attachments.append(str(i))
     return attachments
@@ -154,7 +158,7 @@ class LongPool(threading.Thread):
                             continue
                         if str(msg['peer_id']-2000000000) in self.chats:
                            ParseChat(msg, me, user, api)
-                        elif '*' in self.chat_users:
+                        elif msg['peer_id']-2000000000 < 0 and '*' in self.chat_users:
                             ParsePriv(msg, me, user, api)
                         elif str(msg['from_id']) in self.chat_users:
                             ParsePriv(msg, me, user, api)
