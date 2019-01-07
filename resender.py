@@ -153,6 +153,8 @@ class LongPool(threading.Thread):
                     if i.type == VkEventType.MESSAGE_NEW:
                         msg_ext = api.messages.getById(message_ids=i.message_id)
                         msg = msg_ext['items'][0]
+                        if msg['from_id']<0:
+                            continue
                         user = api.users.get(user_ids=msg['from_id'])[0]
                         if msg['out']:
                             continue
@@ -160,7 +162,7 @@ class LongPool(threading.Thread):
                            ParseChat(msg, me, user, api)
                         elif msg['peer_id']-2000000000 < 0 and '*' in self.chat_users:
                             ParsePriv(msg, me, user, api)
-                        elif str(msg['from_id']) in self.chat_users:
+                        elif msg['peer_id']-2000000000 < 0 and str(msg['from_id']) in self.chat_users:
                             ParsePriv(msg, me, user, api)
 
             except Exception as exep:
