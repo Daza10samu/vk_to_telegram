@@ -16,8 +16,8 @@ vk_users = ['temp1','temp2'] <vk users headers>
 
 [temp1]
 token = 0a0a00a0a0aa00a0a0a0a0a00 <vk token>
-chat_users = [0, 1, 3, 70] <users from which messages will be forwarded>
-chats = [1, 34] <chats from which messages will be forwarded>
+chat_users = [0, 1, 3, 70] <users from which messages will be forwarded, or * for all private messages>
+chats = [1, 34] <chats from which messages will be forwarded, * don't work with chats>
 
 [temp2]
 token = a0a00a0a0aa00a0a0a0a0a00
