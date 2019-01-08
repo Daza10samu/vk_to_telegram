@@ -4,7 +4,7 @@ This scripts can help to forward messages from [vk](vk.com) to [Telegram](telegr
 ***
 
 ## Configs
-First of all you have to generate config file. `config_maker.py` and `vk_token_get.py` help you. Or you can write it by yourself. Config should be in `~/.config/vk_to_telegram/config`.
+First of all you should generate config file. `config_maker.py` and `vk_token_get.py` help you. Or you can write it by yourself. Config should be in `~/.config/vk_to_telegram/config`.
 
 ### Manually
 Example( comments in `<>` must be deleted):
@@ -33,3 +33,8 @@ chats = []
 ## Usage
 
 It will run on VPS/VDS. Not tested with [heroku](heroku.com) and same servises, but it should work, if you change config path( 7th line in `resender.py`).
+
+To conntact with Bot you can use Telegram commands:
+1. `/stop`  to pause bot
+2. `/start` to resume
+3. `/kill`  to kill bot( it kills bot's pid, doesn't work with Windows server). You can kill bot manually
