@@ -13,6 +13,8 @@ send_ids = [x.strip("[] '") for x in send_ids.split(',')]
 bot = telebot.TeleBot(bot_token)
 
 def bot_send(msg):
+    if msg == "Ohhh... there are some errors: 'ts'": # This blocks notification that VkLongPoll restarted
+        return
     for i in send_ids:
         bot.send_message(i, msg)
 
@@ -191,7 +193,7 @@ def handle_stop(message):
 def kill(message):
     for i in send_ids:
         bot.send_message(i, 'Bot have been killed')
-    *proc, = os.popen('ps axu | grep resender')
+    *proc, = os.popen('ps axu | grep resender.py')
     pid = proc[0].split()[1]
     os.system('kill '+pid)
 
