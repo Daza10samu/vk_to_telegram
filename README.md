@@ -1,5 +1,5 @@
 # vk_to_telegram
-This scripts can help to forward messages from [vk](vk.com) to [Telegram](telegram.org)
+This scripts can help to forward messages from vk to Telegram
 
 ***
 
@@ -32,7 +32,7 @@ chats = []
 
 ## Usage
 
-It will run on VPS/VDS. Not tested with [heroku](heroku.com) and same servises, but it should work, if you change config path( 7th line in `resender.py`).
+It will run on VPS/VDS. Not tested with heroku and same servises, but it should work, if you change config path( 7th line in `resender.py`).
 
 To conntact with Bot you can use Telegram commands:
 1. `/stop`  to pause bot
