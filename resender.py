@@ -19,14 +19,12 @@ def bot_send(msg):
         bot.send_message(i, msg)
 
 def ParseAtta(msg):
+    attachments = []
     for i in msg['attachments']:
         print(i)
         print()
-        attachments = []
         if i['type'] == 'sticker':
             sticker = i['sticker']
-            print(sticker)
-            print()
             maxq = 0
             for j in sticker['images']:
                 if j['width']*j['height']>maxq:
@@ -50,6 +48,7 @@ def ParseAtta(msg):
             attachments.append('video '+i['video']['player'])
         else:
             attachments.append(str(i))
+    print(attachments)
     return attachments
 
 def ParseRepl(msg, api, fwd_level=1):
@@ -128,7 +127,7 @@ def ParseChat(msg, me, user, api):
         if msg['reply_message']!=[]:
             ParseRepl(msg, api)
     if msg['fwd_messages']!=[]:
-        ParseForw(msg)
+        ParseForw(msg, api)
     print()
     print()
 
