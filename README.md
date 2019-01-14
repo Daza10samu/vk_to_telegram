@@ -3,6 +3,15 @@ This scripts can help to forward messages from vk to Telegram
 
 ***
 
+## Dependences and installation
+
+This script tested with python 3.7
+
+To install you should do next:
+
+1. `pip3 intall vk_api; pip3 install pyTelegramBotAPI`
+2. `git clone https://github.com/EtFortuitiCasusGignitMundoSuccedunt/vk_to_telegram.git`
+
 ## Configs
 First of all you should generate config file. `config_maker.py` and `vk_token_get.py` help you. Or you can write it by yourself. Config should be in `~/.config/vk_to_telegram/config`.
 
